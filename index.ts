@@ -1,11 +1,14 @@
 import express, { request, response } from "express";
 import { quotes } from "./db";
+import cors from "cors";
+import Quote from "./db";
+
 const app = express();
 const PORT = 4000;
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "http://localhost:4000",
   })
 );
 app.get("/", (req, res) => {
@@ -19,8 +22,8 @@ app.get("/", (req, res) => {
    `);
 });
 
-app.get(`/quotes`, (request, response) => {
-  response.send(`/quotes`);
+app.get(`/quotes`, (req, res) => {
+  res.send(`/quotes`);
 });
 console.log(quotes);
 
@@ -40,9 +43,51 @@ app.get("/quotes/:id", (req, res) => {
   }
 });
 
+app.post("/quotes", (req, res) => {
+  // const { content, firstName, lastName, age, image } = req.body;
+  const firstName = req.body.firstName;
+
+  const lastName = req.body.lastName;
+  const image = req.body.image;
+  const quote = req.body.quote;
+
+  const age = req.body.age;
+
+  const errors = [];
+
+  if (typeof firstName !== "string") {
+    errors.push("Name missing or not a string");
+  }
+  if (typeof lastName !== "string") {
+    errors.push("lastname missing or not a string");
+  }
+
+  if (typeof image !== "string") {
+    errors.push("image missing or not a string");
+  }
+  if (typeof quote !== "string") {
+    errors.push("quote missing or not a string");
+  }
+  if (typeof age !== "number" && age < 0) {
+    errors.push("Age must be a number and bigger than 0!");
+  }
+
+  if (errors.length === 0) {
+    const newQuote: Quote = {
+      id: Math.random(),
+      quote: quote,
+      firstName: firstName,
+      lastName: lastName,
+      age: age,
+      image: image,
+    };
+    quotes.push(newQuote);
+    res.status(201).send(newQuote);
+  } else {
+    res.status(400).send({ errors: errors });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server up on:http://localhost3000:${PORT} `);
 });
-function cors(arg0: { origin: string }): any {
-  throw new Error("Function not implemented.");
-}
