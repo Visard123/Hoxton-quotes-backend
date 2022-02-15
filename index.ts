@@ -1,16 +1,12 @@
-import express, { request, response } from "express";
+import express from "express";
 import { quotes } from "./db";
 import cors from "cors";
-import Quote from "./db";
+import { Quote } from "./db";
 
 const app = express();
 const PORT = 4000;
 
-app.use(
-  cors({
-    origin: "http://localhost:4000",
-  })
-);
+app.use(cors({ origin: "*" }));
 app.get("/", (req, res) => {
   res.send(`
     <h1 style="color: red;">Welcome to our quotes API!</h1>
@@ -44,7 +40,7 @@ app.get("/quotes/:id", (req, res) => {
 });
 
 app.post("/quotes", (req, res) => {
-  // const { content, firstName, lastName, age, image } = req.body;
+  // const { quote, firstName, lastName, age, image } = req.body;
   const firstName = req.body.firstName;
 
   const lastName = req.body.lastName;
@@ -85,6 +81,38 @@ app.post("/quotes", (req, res) => {
     res.status(201).send(newQuote);
   } else {
     res.status(400).send({ errors: errors });
+  }
+});
+
+app.delete("/quotes/:id", (req, res) => {
+  const id = Number(req.params.id);
+
+  const match = quotes.find((quote) => quote.id === id);
+  if (match) {
+    quotes = quotes.filter((quote) => quote.id !== id);
+    res.send("Quote deleted");
+  } else {
+    res.status(404).send({ error: "Quote not found" });
+  }
+});
+
+app.patch("/quotes/:id", (req, res) => {
+  const id = Number(req.params.id);
+  const quoteToUpdate = quotes.find((quote) => quote.id === id);
+
+  if (quoteToUpdate) {
+    if (typeof req.body.quote === "string")
+      quoteToUpdate.quote = req.body.quote;
+    if (typeof req.body.firstName === "string")
+      quoteToUpdate.firstName = req.body.firstName;
+    if (typeof req.body.lastName === "string")
+      quoteToUpdate.lastName = req.body.lastName;
+    if (typeof req.body.age === "number") quoteToUpdate.age = req.body.age;
+    if (typeof req.body.image === "string")
+      quoteToUpdate.image = req.body.image;
+    res.send(quoteToUpdate);
+  } else {
+    res.status(404).send({ error: "Quote not found." });
   }
 });
 

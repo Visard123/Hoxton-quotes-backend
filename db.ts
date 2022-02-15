@@ -1,12 +1,14 @@
-export type Quote = {
-  id: number;
-  quote: string;
-  firstName: string;
-  lastName: string;
-  age: number;
-  image: string;
-};
-export const quotes: Quote = [
+export type Quote = [
+  {
+    id: number;
+    quote: string;
+    firstName: string;
+    lastName: string;
+    age: number;
+    image: string;
+  }
+];
+export const quotes: Quote[] = [
   {
     id: Math.random(),
     quote: `The greatest glory in living lies not in never falling, but in rising every time we fall. `,
