@@ -2,9 +2,14 @@ import express from "express";
 import { quotes } from "./db";
 import cors from "cors";
 import { Quote } from "./db";
+import Database from "better-sqlite3";
 
 const app = express();
 const PORT = 4000;
+
+const db = new Database("./data.db", {
+  verbose: console.log,
+});
 
 app.use(cors({ origin: "*" }));
 app.get("/", (req, res) => {
@@ -12,7 +17,7 @@ app.get("/", (req, res) => {
     <h1 style="color: red;">Welcome to our quotes API!</h1>
     <p>Here are some endpoints you can use:</p>
     <ul>
-      <li><a href="/quotes">/quotes</a></li>
+      <li><a href="/quotes">{quotes}</a></li>
       <li><a href="/randomQuote">/randomQuote</a></li>
     </ul>
    `);
@@ -89,7 +94,7 @@ app.delete("/quotes/:id", (req, res) => {
 
   const match = quotes.find((quote) => quote.id === id);
   if (match) {
-    quotes = quotes.filter((quote) => quote.id !== id);
+    const quoted = quotes.filter((quote) => quote.id !== id);
     res.send("Quote deleted");
   } else {
     res.status(404).send({ error: "Quote not found" });
@@ -117,5 +122,41 @@ app.patch("/quotes/:id", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server up on:http://localhost3000:${PORT} `);
+  console.log(`Server up on:http://localhost:${PORT} 
+  `);
 });
+
+const deleteTable = db.prepare(`
+DELETE FROM quotes;
+`);
+deleteTable.run();
+
+const createTableOfQuotes = db.prepare(`
+CREATE TABLE IF NOT EXISTS quotes (
+  id INTEGER,
+quote TEXT NOT NULL,
+  firstName TEXT NOT NULL,
+  lastName TEXT NOT NULL,
+  age INTEGER NOT NULL,
+  image TEXT NOT NULL,
+  PRIMARY KEY (id)
+);
+`);
+createTableOfQuotes.run();
+
+const createQuoteValues = db.prepare(`
+INSERT INTO quotes (quote, firstName, lastName, age, image ) VALUES (?, ?, ? ,? ,? );
+`);
+for (const quote of quotes) {
+  createQuoteValues.run(
+    quote.quote,
+    quote.firstName,
+    quote.lastName,
+    quote.age,
+    quote.image
+  );
+}
+
+const getAllQuotes = db.prepare(`
+SELECT * FROM quotes;
+`);
